@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block titulo %}Inicio | Test de Burnout{% endblock %}
+
+{% block contenido %}
+<section class="hero container">
+  <div class="hero__text">
+    <h1 class="hero__title">Evalúa tu <span class="grad">agotamiento académico</span> en minutos</h1>
+    <p class="hero__subtitle">
+      Un test breve para identificar señales de burnout y recibir orientación temprana.
+    </p>
+
+    <ul class="hero__badges">
+      <li>
+        <!-- candado -->
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7 10V7a5 5 0 1 1 10 0v3M6 10h12a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Confidencial y anónimo
+      </li>
+      <li>
+        <!-- reloj -->
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+        5 – 7 min
+      </li>
+    </ul>
+
+    <div class="hero__actions">
+      <a class="btn btn--primary" href="{{ url_for('registro') }}">Ir a registro</a>
+    </div>
+  </div>
+
+  <!-- ilustración abstracta hecha con CSS (sin imágenes) -->
+  <div class="hero__art" aria-hidden="true">
+    <div class="art-card art-progress">
+  <div class="art-progress__title">0/10</div>
+  <div class="art-progress__bar"></div>
+  <ul class="art-progress__list">
+    <li></li><li></li><li></li>
+  </ul>
+</div>
+
+<div class="art-card art-tip">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+    <path d="M7 10V7a5 5 0 1 1 10 0v3M6 10h12a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <span>Confidencial</span>
+</div>
+
+  </div>
+</section>
+
+<section id="como-funciona" class="features container">
+  <div class="features-grid">
+    <article class="card">
+      <h3>Breve y claro</h3>
+      <p>Preguntas directas para evaluar cansancio, cinismo y eficacia académica.</p>
+    </article>
+    <article class="card">
+      <h3>Resultados útiles</h3>
+      <p>Obtén una lectura inmediata y recomendaciones para cuidarte mejor.</p>
+    </article>
+    <article class="card">
+      <h3>Privacidad primero</h3>
+      <p>Tus respuestas no identifican tu identidad. Tus datos se tratan con respeto.</p>
+    </article>
+  </div>
+</section>
+{% endblock %}

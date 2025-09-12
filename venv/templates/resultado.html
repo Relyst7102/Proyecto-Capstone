@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block titulo %}Resultado del Test{% endblock %}
+
+{% block contenido %}
+<section class="container form-wrap">
+  <h1 class="section-title">Resultado del Test</h1>
+
+  {% set total_max = 25 * 5 %}
+  {% set personal_max = 6 * 5 %}
+  {% set studies_max = 7 * 5 %}
+  {% set peers_max = 6 * 5 %}
+  {% set teachers_max = 6 * 5 %}
+
+  {% set total_pct = (session.score_total * 100 // total_max) %}
+  {% set personal_pct = (session.score_personal * 100 // personal_max) %}
+  {% set studies_pct = (session.score_studies * 100 // studies_max) %}
+  {% set peers_pct = (session.score_peers * 100 // peers_max) %}
+  {% set teachers_pct = (session.score_teachers * 100 // teachers_max) %}
+
+  <div class="result-grid">
+    <!-- KPI principal -->
+    <div class="card result-card">
+      <div class="kpi">
+        <div class="total">{{ session.score_total }}</div>
+        <div>
+          <div><strong>Puntaje total</strong></div>
+          <small>máx. {{ total_max }} • {{ total_pct }}%</small>
+        </div>
+      </div>
+
+      <div class="result-cta">
+        <a class="btn btn--primary" href="{{ url_for('inicio') }}">Volver al inicio</a>
+      </div>
+
+      <hr style="margin: 1rem 0; border:none; border-top:1px solid var(--border)">
+      <p style="color:var(--muted); margin:0">
+        <strong>Participante:</strong> {{ participant.name }}{% if participant.email %} ({{ participant.email }}){% endif %}<br>
+        <strong>Fecha:</strong> {{ session.completed_at or session.started_at }}
+      </p>
+    </div>
+
+    <!-- Desglose por áreas -->
+    <div class="card result-card">
+      <h3 style="margin-top:0">Desglose por áreas</h3>
+      <br>
+      <div class="score-rows">
+        <div class="score-row">
+          <span class="label">Personal</span>
+          <div class="bar"><span style="width: {{ personal_pct }}%"></span></div>
+          <span class="num">{{ session.score_personal }} / {{ personal_max }}</span>
+        </div>
+        <div class="score-row">
+          <span class="label">Estudios</span>
+          <div class="bar"><span style="width: {{ studies_pct }}%"></span></div>
+          <span class="num">{{ session.score_studies }} / {{ studies_max }}</span>
+        </div>
+        <div class="score-row">
+          <span class="label">Compañeros</span>
+          <div class="bar"><span style="width: {{ peers_pct }}%"></span></div>
+          <span class="num">{{ session.score_peers }} / {{ peers_max }}</span>
+        </div>
+        <div class="score-row">
+          <span class="label">Profesores</span>
+          <div class="bar"><span style="width: {{ teachers_pct }}%"></span></div>
+          <span class="num">{{ session.score_teachers }} / {{ teachers_max }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clasificación por Reglas -->
+    <div class="card result-card">
+      <h3 style="margin:0 0 .5rem 0;">Tipo de estrés (reglas)</h3>
+      <p style="margin:.2rem 0 0 0; font-size:1.05rem;"><strong>{{ rule_label }}</strong></p>
+      <small class="pending-hint">Calculado con umbrales sobre % por subescala (documentados en la metodología).</small>
+    </div>
+
+    <!-- Clasificación por ML -->
+    <div class="card result-card">
+      <h3 style="margin:0 0 .5rem 0;">Tipo de estrés (modelo ML)</h3>
+
+      {% if ml_pred and ml_pred.label %}
+        <p style="margin:.2rem 0 0 0; font-size:1.05rem;">
+          <strong>{{ ml_pred.label }}</strong>
+          <small class="pending-hint">· {{ ml_pred.model }} · versión {{ ml_pred.version }}</small>
+        </p>
+
+        {% if ml_pred.proba %}
+          <div class="score-rows" style="margin-top:.6rem">
+            {% for cls, prob in ml_pred.proba|dictsort(by='value', reverse=True) %}
+            <div class="score-row">
+              <span class="label">{{ cls }}</span>
+              <div class="bar"><span style="width: {{ (prob*100)|round(1) }}%"></span></div>
+              <span class="num">{{ (prob*100)|round(1) }}%</span>
+            </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% else %}
+        <p class="pending-hint" style="margin:.2rem 0 0 0;">
+          Aún no hay un modelo entrenado con variedad suficiente (o no se encontró en <code>/models</code>).
+          Se muestran los resultados por reglas.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

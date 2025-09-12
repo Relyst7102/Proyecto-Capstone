@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block titulo %}Test de Burnout{% endblock %}</title>
+
+  <!-- Fuente moderna -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+  {# Detecta dónde estamos #}
+  {% set on_test = (request.endpoint == 'test_burnout') %}
+  {# Ocultar "Ir a Registro" tanto en el test como en el resultado #}
+  {% set hide_register = request.endpoint in ['test_burnout', 'resultado'] %}
+
+  <!-- Header pegajoso con blur -->
+  <header class="site-header">
+    <div class="container header-inner">
+      {# Brand: deshabilitado en /test (span) y link en otras páginas #}
+      {% if on_test %}
+        <span class="brand" aria-disabled="true">Test de Burnout</span>
+      {% else %}
+        <a class="brand" href="{{ url_for('inicio') }}">Test de Burnout</a>
+      {% endif %}
+
+      <nav class="nav">
+        {# “Inicio”: deshabilitado en /test #}
+        {% if on_test %}
+          <span class="nav-link" aria-disabled="true">Inicio</span>
+        {% else %}
+          <a class="nav-link" href="{{ url_for('inicio') }}">Inicio</a>
+        {% endif %}
+
+        {# Ocultar “Ir a Registro” en /test y en /resultado #}
+        {% if not hide_register %}
+          <a class="btn btn--sm btn--primary" href="{{ url_for('registro') }}">Ir a Registro</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    {% block contenido %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; 2025 Test de Burnout. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

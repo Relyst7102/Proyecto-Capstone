@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titulo %}Registro | Test de Burnout{% endblock %}
+
+{% block contenido %}
+<section class="container form-wrap">
+  <h1 class="section-title">Registro para el Test</h1>
+  <p class="section-subtitle">Completa tus datos para comenzar. Tardas menos de 1 minuto.</p>
+
+  <!-- Enviamos el formulario directamente a /test -->
+  <form action="{{ url_for('test_burnout') }}" method="post" class="card form-card">
+    <div class="grid-2">
+      <div class="field">
+        <label for="nombre">Nombre completo</label>
+        <input class="input" type="text" id="nombre" name="nombre" required>
+      </div>
+
+      <div class="field">
+        <label for="edad">Edad</label>
+        <input class="input" type="number" id="edad" name="edad" min="10" max="100" required>
+      </div>
+
+      <div class="field">
+        <label for="universidad">Universidad</label>
+        <input class="input" type="text" id="universidad" name="universidad" required>
+      </div>
+
+      <div class="field">
+        <label for="correo">Correo electrónico</label>
+        <input class="input" type="email" id="correo" name="correo" required>
+      </div>
+    </div>
+    <br>
+    <div class="actions">
+      <button class="btn btn--primary btn--full" type="submit">Comenzar test</button>
+    </div>
+  </form>
+</section>
+{% endblock %}
