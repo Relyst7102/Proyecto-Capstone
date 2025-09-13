@@ -15,10 +15,8 @@ load_dotenv()
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
 # ---------- Config DB ----------
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "mysql+pymysql://root:712002@127.0.0.1:3306/test_burnout?charset=utf8mb4"
-)
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///data.db")
+
 app.config.update(
     SQLALCHEMY_DATABASE_URI=DATABASE_URL,
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
