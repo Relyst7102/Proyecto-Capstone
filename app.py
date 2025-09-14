@@ -54,6 +54,9 @@ class TestSession(db.Model):
     score_peers = db.Column(db.Integer)
     score_teachers = db.Column(db.Integer)
 
+    # NUEVO: guarda el tipo detectado por reglas; nombre de columna real: E_tipo
+    e_tipo = db.Column("E_tipo", db.String(50))
+
     responses = db.relationship("Response", backref="session", cascade="all, delete-orphan", lazy=True)
 
 class Question(db.Model):
@@ -190,11 +193,19 @@ def test_burnout():
                 db.session.add(Response(session_id=sess.id, question_id=qid, value=int(val)))
 
             scores = compute_scores(values)
-            sess.score_total = scores["total"]
+            sess.score_total    = scores["total"]
             sess.score_personal = scores["personal"]
-            sess.score_studies = scores["studies"]
-            sess.score_peers = scores["peers"]
+            sess.score_studies  = scores["studies"]
+            sess.score_peers    = scores["peers"]
             sess.score_teachers = scores["teachers"]
+
+            # Guarda el tipo detectado por REGLAS en la sesión
+            rule_label, _ = classify_from_scores(
+                scores["personal"], scores["studies"], scores["peers"],
+                scores["teachers"], scores["total"]
+            )
+            sess.e_tipo = rule_label
+
             sess.completed_at = datetime.utcnow()
             db.session.commit()
 

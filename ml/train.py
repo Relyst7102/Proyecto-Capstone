@@ -1,6 +1,12 @@
 # ml/train.py
-import os, json, time, joblib, numpy as np, pandas as pd
+import os
+import json
+import time
+import joblib
+import numpy as np
+import pandas as pd
 from pathlib import Path
+from collections import Counter
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
@@ -28,8 +34,17 @@ DATABASE_URL = os.getenv(
 MODELS_DIR = Path("models")
 MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
+def _posix(p: Path | str) -> str:
+    """Asegura rutas tipo POSIX para despliegues en Linux/Render."""
+    return Path(p).as_posix()
 
 def fetch_dataset():
+    """
+    Lee respuestas y subpuntuaciones desde la BD y construye:
+      X: matriz (n_sesiones, 25) con q1..q25
+      y: etiquetas de clase según reglas (string)
+    Solo usa sesiones completadas y con TODAS las 25 respuestas.
+    """
     eng = create_engine(DATABASE_URL)
     sql = """
     SELECT s.id AS session_id, r.question_id, r.value,
@@ -45,18 +60,20 @@ def fetch_dataset():
     X = (
         df.pivot_table(index="session_id", columns="question_id", values="value")
           .rename(columns=lambda q: f"q{int(q)}")
-          .dropna(axis=0)
+          .dropna(axis=0)    # exige las 25 respuestas
           .sort_index()
     )
 
-    # Subpuntuaciones por sesión
+    # Subpuntuaciones por sesión (alineadas a X.index)
     meta = (
         df.drop_duplicates("session_id")[
             ["session_id", "score_personal", "score_studies", "score_peers", "score_teachers", "score_total"]
-        ].set_index("session_id").loc[X.index]
+        ]
+        .set_index("session_id")
+        .loc[X.index]
     )
 
-    # y (etiqueta) con reglas A–B
+    # y (etiqueta) con reglas
     y = []
     for _, row in meta.iterrows():
         label, _ = classify_from_scores(
@@ -69,20 +86,37 @@ def fetch_dataset():
         y.append(label)
 
     y = pd.Series(y, index=X.index, name="label")
+
+    # Info útil en consola
+    cnt = Counter(y.values.tolist())
+    print("Distribución de clases:", dict(cnt))
+    print("Total sesiones usadas:", len(X))
     return X.values, y.values
 
-
 def build_models(cv_svm: int):
+    """Modelos base. SVM calibrada para obtener predict_proba y permitir Voting 'soft'."""
     return {
         "logreg": Pipeline([
             ("scaler", StandardScaler()),
-            ("clf", LogisticRegression(max_iter=2000)),  # multi_class por defecto (multinomial desde 1.8)
+            ("clf", LogisticRegression(
+                max_iter=2000,
+                class_weight="balanced",
+                multi_class="auto",
+                random_state=42
+            )),
         ]),
         "svm": Pipeline([
             ("scaler", StandardScaler()),
-            ("clf", CalibratedClassifierCV(estimator=LinearSVC(C=1.0), cv=cv_svm)),
+            ("clf", CalibratedClassifierCV(
+                estimator=LinearSVC(C=1.0, class_weight="balanced", random_state=42),
+                cv=cv_svm
+            )),
         ]),
-        "rf": RandomForestClassifier(n_estimators=400, class_weight="balanced", random_state=42),
+        "rf": RandomForestClassifier(
+            n_estimators=400,
+            class_weight="balanced",
+            random_state=42
+        ),
         "gb": GradientBoostingClassifier(random_state=42),
         "knn": Pipeline([
             ("scaler", StandardScaler()),
@@ -93,7 +127,6 @@ def build_models(cv_svm: int):
             ("clf", MLPClassifier(hidden_layer_sizes=(64, 32), max_iter=800, random_state=42)),
         ]),
     }
-
 
 def train():
     X, y = fetch_dataset()
@@ -116,16 +149,19 @@ def train():
 
         stamp = time.strftime("%Y%m%d")
         path = MODELS_DIR / f"{stamp}_dummy.joblib"
-        joblib.dump(dummy, path)
+        joblib.dump(dummy, path, compress=3)
 
         meta = {
             "version": stamp,
             "classes": le.classes_.tolist(),
             "feature_order": [f"q{i}" for i in range(1, 26)],
-            "models": [str(path)],
+            "models": [_posix(path)],
             "val_results": [{"name": "dummy", "acc": 1.0, "f1_macro": 1.0}],
+            "class_counts": {cls: int((y == cls).sum()) for cls in le.classes_},
+            "train_size": int(len(X)),
+            "val_size": 0
         }
-        joblib.dump(le, MODELS_DIR / f"{stamp}_label_encoder.joblib")
+        joblib.dump(le, MODELS_DIR / f"{stamp}_label_encoder.joblib", compress=3)
         with open(MODELS_DIR / f"{stamp}_meta.json", "w", encoding="utf-8") as f:
             json.dump(meta, f, ensure_ascii=False, indent=2)
         print("✔ DummyClassifier guardado en /models. Repite el entrenamiento cuando tengas más variedad de clases.")
@@ -142,7 +178,7 @@ def train():
             X, y_enc, test_size=0.25, random_state=42
         )
 
-    # cv seguro para la SVM calibrada
+    # cv seguro para la SVM calibrada (no mayor que el mínimo por clase)
     counts = np.bincount(y_tr)
     min_per_class = int(counts[counts > 0].min())
     cv_svm = max(2, min(5, min_per_class))
@@ -162,12 +198,12 @@ def train():
         print(f"ACC={acc:.3f}  F1(macro)={f1m:.3f}")
 
         path = MODELS_DIR / f"{stamp}_{name}.joblib"
-        joblib.dump(model, path)
+        joblib.dump(model, path, compress=3)
         results.append({"name": name, "acc": acc, "f1_macro": f1m})
-        saved.append(str(path))
+        saved.append(_posix(path))
 
-    # Ensamble
-    estimators = [(r["name"], joblib.load(p)) for r, p in zip(results, saved)]
+    # Ensamble (soft voting necesita predict_proba en todos)
+    estimators = [(r["name"], joblib.load(Path(p))) for r, p in zip(results, saved)]
     vc = VotingClassifier(estimators=estimators, voting="soft")
     print("\nEntrenando ensamble…")
     vc.fit(X_tr, y_tr)
@@ -178,23 +214,25 @@ def train():
     print(f"ACC(ensamble)={acc:.3f}  F1(macro)={f1m:.3f}")
 
     ens_path = MODELS_DIR / f"{stamp}_voting.joblib"
-    joblib.dump(vc, ens_path)
+    joblib.dump(vc, ens_path, compress=3)
     results.append({"name": "voting", "acc": acc, "f1_macro": f1m})
-    saved.append(str(ens_path))
+    saved.append(_posix(ens_path))
 
     meta = {
         "version": stamp,
         "classes": le.classes_.tolist(),
         "feature_order": [f"q{i}" for i in range(1, 26)],
-        "models": saved,
+        "models": saved,  # rutas POSIX compatibles con Linux/Render
         "val_results": results,
+        "class_counts": {cls: int((y == cls).sum()) for cls in le.classes_},
+        "train_size": int(len(X_tr)),
+        "val_size": int(len(X_val)),
     }
-    joblib.dump(le, MODELS_DIR / f"{stamp}_label_encoder.joblib")
+    joblib.dump(le, MODELS_DIR / f"{stamp}_label_encoder.joblib", compress=3)
     with open(MODELS_DIR / f"{stamp}_meta.json", "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)
 
     print("\n✔ Modelos guardados en /models")
-
 
 if __name__ == "__main__":
     train()

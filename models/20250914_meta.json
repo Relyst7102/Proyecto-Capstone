@@ -1,0 +1,92 @@
+{
+  "version": "20250914",
+  "classes": [
+    "Distrés",
+    "Estrés agudo",
+    "Estrés agudo episódico",
+    "Estrés crónico",
+    "Eustrés"
+  ],
+  "feature_order": [
+    "q1",
+    "q2",
+    "q3",
+    "q4",
+    "q5",
+    "q6",
+    "q7",
+    "q8",
+    "q9",
+    "q10",
+    "q11",
+    "q12",
+    "q13",
+    "q14",
+    "q15",
+    "q16",
+    "q17",
+    "q18",
+    "q19",
+    "q20",
+    "q21",
+    "q22",
+    "q23",
+    "q24",
+    "q25"
+  ],
+  "models": [
+    "models/20250914_logreg.joblib",
+    "models/20250914_svm.joblib",
+    "models/20250914_rf.joblib",
+    "models/20250914_gb.joblib",
+    "models/20250914_knn.joblib",
+    "models/20250914_mlp.joblib",
+    "models/20250914_voting.joblib"
+  ],
+  "val_results": [
+    {
+      "name": "logreg",
+      "acc": 0.8181818181818182,
+      "f1_macro": 0.8266666666666668
+    },
+    {
+      "name": "svm",
+      "acc": 0.8181818181818182,
+      "f1_macro": 0.8133333333333335
+    },
+    {
+      "name": "rf",
+      "acc": 0.8181818181818182,
+      "f1_macro": 0.8133333333333335
+    },
+    {
+      "name": "gb",
+      "acc": 0.9090909090909091,
+      "f1_macro": 0.9199999999999999
+    },
+    {
+      "name": "knn",
+      "acc": 0.6363636363636364,
+      "f1_macro": 0.5676190476190477
+    },
+    {
+      "name": "mlp",
+      "acc": 0.8181818181818182,
+      "f1_macro": 0.8133333333333335
+    },
+    {
+      "name": "voting",
+      "acc": 0.8181818181818182,
+      "f1_macro": 0.8266666666666668
+    }
+  ],
+  "class_counts": {
+    "Distrés": 9,
+    "Estrés agudo": 9,
+    "Estrés agudo episódico": 9,
+    "Estrés crónico": 10,
+    "Eustrés": 6
+  },
+  "train_size": 32,
+  "val_size": 11
+}
