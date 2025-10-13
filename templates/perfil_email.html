@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block titulo %}Cambiar e-mail · Tests Académicos{% endblock %}
+
+{% block contenido %}
+<section class="container form-wrap">
+
+  <div class="card form-card">
+    <h2 style="margin-top:0;">Cambiar e-mail</h2>
+
+    {# Solo mostrar mensajes de error, ocultar los "ok" #}
+    {% with messages = get_flashed_messages(with_categories=true, category_filter=['error']) %}
+      {% if messages %}
+        <div class="card form-card" style="margin: 0 0 12px 0;">
+          {% for cat, msg in messages %}
+            <p style="margin:.25rem 0; color: tomato;">{{ msg }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="post" autocomplete="off">
+      <div class="grid-2">
+        <div class="field">
+          <label>Actual e-mail</label>
+          <!-- No editable y NO se envía como el nuevo correo -->
+          <input
+            class="input"
+            type="email"
+            name="current_email"
+            value="{{ current_user.email }}"
+            readonly
+            aria-readonly="true"
+          >
+        </div>
+
+        <div class="field">
+          <label>Nuevo e-mail</label>
+          <!-- Este es el que leerá el backend como nuevo correo -->
+          <input class="input" type="email" name="email" required>
+        </div>
+      </div>
+
+      <br>
+
+      <div class="field">
+        <label>Contraseña</label>
+        <input class="input" type="password" name="password" required autocomplete="current-password">
+      </div>
+
+      <br>
+
+      <div class="actions" style="margin-top:.6rem;">
+        <button class="btn btn--primary">Guardar</button>
+        <a class="btn btn--ghost" href="{{ url_for('perfil') }}">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

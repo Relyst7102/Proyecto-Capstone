@@ -1,59 +1,69 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block titulo %}Test de Burnout{% endblock %}</title>
-
-  <!-- Fuente moderna -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block titulo %}Tests Académicos{% endblock %}</title>
+  <meta name="color-scheme" content="light dark">
+  {% block extra_head %}{% endblock %}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
+  <!-- Asegúrate de tener este archivo en static/css/style.css -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
+<body class="has-aurora">
+  <!-- Decoración de fondo -->
+  <div class="aurora" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
 
-  {# Detecta dónde estamos #}
-  {% set on_test = (request.endpoint == 'test_burnout') %}
-  {# Ocultar "Ir a Registro" tanto en el test como en el resultado #}
-  {% set hide_register = request.endpoint in ['test_burnout', 'resultado'] %}
+  {% set on_test = (request.endpoint == 'test_run') %}
+  {% set hide_register = request.endpoint in ['test_run', 'resultado'] or current_user %}
 
-  <!-- Header pegajoso con blur -->
-  <header class="site-header">
+  <!-- Header -->
+  <header class="site-header" role="banner">
     <div class="container header-inner">
-      {# Brand: deshabilitado en /test (span) y link en otras páginas #}
       {% if on_test %}
-        <span class="brand" aria-disabled="true">Test de Burnout</span>
+        <span class="brand" aria-disabled="true">Tests Académicos</span>
       {% else %}
-        <a class="brand" href="{{ url_for('inicio') }}">Test de Burnout</a>
+        <a class="brand" href="{{ url_for('inicio') }}">Tests Académicos</a>
       {% endif %}
 
-      <nav class="nav">
-        {# “Inicio”: deshabilitado en /test #}
-        {% if on_test %}
-          <span class="nav-link" aria-disabled="true">Inicio</span>
+      <nav class="nav" aria-label="Principal">
+        {% if current_user %}
+          <a class="nav-link" href="{{ url_for('perfil') }}">Hola, {{ current_user_first }}</a>
         {% else %}
-          <a class="nav-link" href="{{ url_for('inicio') }}">Inicio</a>
+          <a class="nav-link" href="{{ url_for('login') }}">Iniciar sesión</a>
         {% endif %}
 
-        {# Ocultar “Ir a Registro” en /test y en /resultado #}
         {% if not hide_register %}
-          <a class="btn btn--sm btn--primary" href="{{ url_for('registro') }}">Ir a Registro</a>
+          <a class="btn btn--sm btn--primary btn--shine" href="{{ url_for('registro') }}">Ir a Registro</a>
         {% endif %}
+
+        <!-- Toggle de tema -->
+        <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" title="Cambiar tema">
+          <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zm10.45 14.32l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM12 4V1h-0v3h0zm0 19v-3h0v3h0zM4 12H1v0h3v0zm19 0h-3v0h3v0zM6.76 19.16l-1.42 1.42-1.79-1.8 1.41-1.41 1.8 1.79zM20.45 4.05l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zM12 7a5 5 0 100 10A5 5 0 0012 7z"/>
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <path d="M20.742 13.045A8 8 0 1110.955 3.258 7 7 0 0020.742 13.045z"/>
+          </svg>
+        </button>
       </nav>
     </div>
   </header>
 
-  <main>
+  <main id="content">
     {% block contenido %}{% endblock %}
   </main>
 
   <footer class="site-footer">
     <div class="container">
-      <p>&copy; 2025 Test de Burnout. Todos los derechos reservados.</p>
+      <p>&copy; {{ current_year }} Tests Académicos. Todos los derechos reservados.</p>
     </div>
   </footer>
 
+  <!-- JS UI -->
+  <script defer src="{{ url_for('static', filename='js/ui.js') }}"></script>
+  {% block scripts %}{% endblock %}
 </body>
 </html>

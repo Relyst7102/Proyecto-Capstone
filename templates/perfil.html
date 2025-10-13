@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block titulo %}Mi perfil · Tests Académicos{% endblock %}
+
+{% block contenido %}
+<section class="container form-wrap">
+  <div class="card form-card">
+    <div style="text-align:center; margin-bottom: 16px;">
+      <div style="width:80px;height:80px;border-radius:50%;margin:0 auto 10px;background:linear-gradient(135deg, rgba(59,130,246,.2), rgba(16,185,129,.2));display:grid;place-items:center;">
+        <svg viewBox="0 0 24 24" width="38" height="38" fill="currentColor"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5z"/></svg>
+      </div>
+      <h2 style="margin:0;">Hola {{ current_user.name }}</h2>
+    </div>
+
+    <div class="features-grid">
+      <a class="card card--test" href="{{ url_for('perfil_tests') }}">
+        <div class="card__body">
+          <div class="card__icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M3 3h2v18H3V3zm4 12h2v6H7v-6zm4-8h2v14h-2V7zm4 4h2v10h-2V11zm4-10h2v20h-2V1z"/></svg></div>
+          <h3 class="card__title">Mis tests</h3>
+          <p class="card__desc">Historial de autoevaluaciones realizadas.</p>
+        </div>
+      </a>
+
+      <a class="card card--test" href="{{ url_for('perfil_datos') }}">
+        <div class="card__body">
+          <div class="card__icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm-9 9v-1c0-3.314 3.582-6 8-6s8 2.686 8 6v1H3z"/></svg></div>
+          <h3 class="card__title">Datos personales</h3>
+          <p class="card__desc">Información provista en el registro.</p>
+        </div>
+      </a>
+
+      <a class="card card--test" href="{{ url_for('perfil_email') }}">
+        <div class="card__body">
+          <div class="card__icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 2l-8 5-8-5h16z"/></svg></div>
+          <h3 class="card__title">Cambiar e-mail</h3>
+          <p class="card__desc">Actualiza tu dirección de correo.</p>
+        </div>
+      </a>
+
+      <a class="card card--test" href="{{ url_for('perfil_password') }}">
+        <div class="card__body">
+          <div class="card__icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17 8V6a5 5 0 00-10 0v2H5v14h14V8h-2zm-8 0V6a3 3 0 016 0v2H9z"/></svg></div>
+          <h3 class="card__title">Cambiar contraseña</h3>
+          <p class="card__desc">Refuerza la seguridad de tu cuenta.</p>
+        </div>
+      </a>
+    </div>
+
+    <div class="actions" style="margin-top:12px; text-align:center;">
+      <a class="btn btn--ghost" href="{{ url_for('logout') }}">Cerrar sesión</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

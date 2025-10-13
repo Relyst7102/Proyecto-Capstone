@@ -1,11 +1,12 @@
 {% extends "base.html" %}
-{% block titulo %}Test de Burnout{% endblock %}
+{% block titulo %}{{ test.name }} · Tests Académicos{% endblock %}
 
 {% block contenido %}
 <section class="container form-wrap">
-  <h1 class="section-title">Test de Burnout (escala Likert 1 – 5)</h1>
+  <h1 class="section-title">{{ test.name }}</h1>
   <p class="section-subtitle">
-    Marca una sola opción por pregunta. 1 = Nunca &nbsp;→&nbsp; 5 = Siempre.
+    Escala Likert {{ test.likert_min }}–{{ test.likert_max }}.
+    {% if test.description %}{{ test.description }}{% endif %}
   </p>
 
   <!-- LEYENDA / INSTRUCCIONES -->
@@ -42,255 +43,39 @@
     <div class="progress" aria-label="Progreso">
       <div id="progressFill"></div>
     </div>
-    <span id="progressChip" class="progress-chip">0 / 25 completadas</span>
+    <span id="progressChip" class="progress-chip">0 / {{ test.questions|length }} completadas</span>
   </div>
 
-  <form id="form-test" action="{{ url_for('test_burnout') }}" method="post" class="card form-card">
+  <!-- El formulario postea a /test/<code> (tu vista ya lo espera) -->
+  <form id="form-test"
+        action="{{ url_for('test_run', test_code=test.code) }}"
+        method="post"
+        class="card form-card">
 
-    <!-- ====== Burnout personal (6) ====== -->
-    <h2 class="group-title">Burnout personal</h2>
-    <div class="likert-group">
-      <!-- 1 -->
-      <div class="likert-question">
-        <div class="qtext">¿Con qué frecuencia se siente cansado(a)?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt" title="{{ i }}"><input type="radio" name="q1" value="{{ i }}" required><span>{{ i }}</span></label>
+    {% for sec in (test.sections | sort(attribute='order')) %}
+      {% set qs = (test.questions
+                   | selectattr('section_id', 'equalto', sec.id)
+                   | sort(attribute='order')) %}
+      {% if qs|length > 0 %}
+        <h2 class="group-title">{{ sec.title }}</h2>
+        <div class="likert-group">
+          {% for q in qs %}
+            <div class="likert-question" {% if q.reversed %}data-reverse="1"{% endif %}>
+              <div class="qtext">{{ q.number }}. {{ q.text }}</div>
+              <div class="likert-options">
+                {% for i in range(test.likert_min, test.likert_max + 1) %}
+                  <label class="opt" title="{{ i }}">
+                    <input type="radio" name="q{{ q.number }}" value="{{ i }}" required>
+                    <span>{{ i }}</span>
+                  </label>
+                {% endfor %}
+              </div>
+            </div>
           {% endfor %}
         </div>
-      </div>
-      <!-- 2 -->
-      <div class="likert-question">
-        <div class="qtext">¿Con qué frecuencia se siente físicamente exhausto(a)?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt" title="{{ i }}"><input type="radio" name="q2" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 3 -->
-      <div class="likert-question">
-        <div class="qtext">¿Con qué frecuencia se siente emocionalmente exhausto(a)?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt" title="{{ i }}"><input type="radio" name="q3" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 4 -->
-      <div class="likert-question">
-        <div class="qtext">¿Con qué frecuencia piensa: “No aguanto más”?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt" title="{{ i }}"><input type="radio" name="q4" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 5 -->
-      <div class="likert-question">
-        <div class="qtext">¿Con qué frecuencia se siente agotado(a)?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt" title="{{ i }}"><input type="radio" name="q5" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 6 -->
-      <div class="likert-question">
-        <div class="qtext">¿Con qué frecuencia se siente débil y susceptible de enfermarse?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt" title="{{ i }}"><input type="radio" name="q6" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
+      {% endif %}
+    {% endfor %}
 
-    <!-- ====== Burnout relacionado con los estudios (7) ====== -->
-    <h2 class="group-title">Burnout relacionado con los estudios</h2>
-    <div class="likert-group">
-      <!-- 7 -->
-      <div class="likert-question">
-        <div class="qtext">¿Se siente agotado(a) al final de un día de universidad?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q7" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 8 -->
-      <div class="likert-question">
-        <div class="qtext">¿Se siente exhausto(a) por la mañana al pensar en otro día en la universidad?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q8" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 9 -->
-      <div class="likert-question">
-        <div class="qtext">¿Siente que cada hora de clase/estudio es agotadora para usted?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q9" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 10 (invertida) -->
-      <div class="likert-question" data-reverse="1">
-        <div class="qtext">¿Tiene tiempo y energía para la familia y los amigos durante su tiempo libre?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q10" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 11 -->
-      <div class="likert-question">
-        <div class="qtext">¿Sus estudios son emocionalmente agotadores?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q11" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 12 -->
-      <div class="likert-question">
-        <div class="qtext">¿Se siente frustrado(a) con sus estudios?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q12" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 13 -->
-      <div class="likert-question">
-        <div class="qtext">¿Se siente exhausto(a) de forma prolongada por sus estudios?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q13" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
-
-    <!-- ====== Burnout relacionado con los compañeros (6) ====== -->
-    <h2 class="group-title">Burnout relacionado con los compañeros</h2>
-    <div class="likert-group">
-      <!-- 14 -->
-      <div class="likert-question">
-        <div class="qtext">¿Le resulta difícil trabajar con sus compañeros(as) de estudio?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q14" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 15 -->
-      <div class="likert-question">
-        <div class="qtext">¿Siente que trabajar con compañeros(as) le drena la energía?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q15" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 16 -->
-      <div class="likert-question">
-        <div class="qtext">¿Le resulta frustrante trabajar con compañeros(as)?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q16" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 17 -->
-      <div class="likert-question">
-        <div class="qtext">¿Siente que da más de lo que recibe cuando trabaja con compañeros(as)?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q17" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 18 -->
-      <div class="likert-question">
-        <div class="qtext">¿Está cansado(a) de lidiar con los compañeros(as)?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q18" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 19 -->
-      <div class="likert-question">
-        <div class="qtext">¿A veces se pregunta cuánto tiempo más podrá seguir trabajando con los compañeros(as)?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q19" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
-
-    <!-- ====== Burnout relacionado con los profesores (6) ====== -->
-    <h2 class="group-title">Burnout relacionado con los profesores</h2>
-    <div class="likert-group">
-      <!-- 20 -->
-      <div class="likert-question">
-        <div class="qtext">¿Le resulta difícil tratar con los profesores?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q20" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 21 -->
-      <div class="likert-question">
-        <div class="qtext">¿Siente que tratar con los profesores le drena la energía?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q21" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 22 -->
-      <div class="likert-question">
-        <div class="qtext">¿Le resulta frustrante tratar con los profesores?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q22" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 23 -->
-      <div class="likert-question">
-        <div class="qtext">¿Siente que da más de lo que recibe cuando trata con los profesores?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q23" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 24 -->
-      <div class="likert-question">
-        <div class="qtext">¿Está cansado(a) de tratar con los profesores?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q24" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-      <!-- 25 -->
-      <div class="likert-question">
-        <div class="qtext">¿A veces se pregunta cuánto tiempo más podrá seguir tratando con los profesores?</div>
-        <div class="likert-options">
-          {% for i in range(1,6) %}
-          <label class="opt"><input type="radio" name="q25" value="{{ i }}" required><span>{{ i }}</span></label>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
     <br>
     <div class="actions">
       <button id="submitBtn" class="btn btn--primary btn--full" type="submit" disabled>
@@ -302,7 +87,7 @@
   </form>
 </section>
 
-<!-- Script: habilita el botón solo cuando se responden todas las preguntas y actualiza la barra -->
+<!-- Script: progreso y habilitar submit dinámicamente -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('form-test');
@@ -313,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const allNames = Array.from(form.querySelectorAll('input[type="radio"]'))
     .reduce((set, el) => set.add(el.name), new Set());
-  const total = allNames.size; // 25
+  const total = allNames.size;
 
   function updateState() {
     const answered = new Set(

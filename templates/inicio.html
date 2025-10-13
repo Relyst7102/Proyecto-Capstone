@@ -1,67 +1,122 @@
 {% extends "base.html" %}
-{% block titulo %}Inicio | Test de Burnout{% endblock %}
+{% block titulo %}Inicio · Tests Académicos{% endblock %}
 
 {% block contenido %}
-<section class="hero container">
-  <div class="hero__text">
-    <h1 class="hero__title">Evalúa tu <span class="grad">agotamiento académico</span> en minutos</h1>
+<section class="container hero">
+  <div class="hero__copy reveal">
+    <h1 class="hero__title">
+      Autoevaluaciones <span class="grad">académicas</span> en línea
+    </h1>
     <p class="hero__subtitle">
-      Un test breve para identificar señales de burnout y recibir orientación temprana.
+      Selecciona uno de los instrumentos disponibles para evaluar estrés percibido, burnout académico y factores relacionados.
     </p>
 
     <ul class="hero__badges">
-      <li>
-        <!-- candado -->
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7 10V7a5 5 0 1 1 10 0v3M6 10h12a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Confidencial y anónimo
-      </li>
-      <li>
-        <!-- reloj -->
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
-        5 – 7 min
-      </li>
+      <li>Escalas Likert</li>
+      <li>Resultados instantáneos</li>
+      <li>Gratis y anónimo</li>
+      <li>Modo oscuro</li>
     </ul>
 
-    <div class="hero__actions">
-      <a class="btn btn--primary" href="{{ url_for('registro') }}">Ir a registro</a>
+    <div class="hero__actions"></div>
+
+    <div class="quick-stats">
+      <div class="qstat">
+        <div class="qstat__icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M3 3h2v18H3V3zm4 10h2v8H7v-8zm4-6h2v14h-2V7zm4 4h2v10h-2V11zm4-8h2v18h-2V3z"/></svg>
+        </div>
+        <div>
+          <div class="qstat__num">3</div>
+          <div class="qstat__label">Instrumentos</div>
+        </div>
+      </div>
+      <div class="qstat">
+        <div class="qstat__icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 8a4 4 0 110 8 4 4 0 010-8zm8.94 4A9 9 0 1012 21a9 9 0 008.94-9zM11 2h2v3h-2V2zM11 19h2v3h-2v-3zM2 11h3v2H2v-2zm17 0h3v2h-3v-2z"/></svg>
+        </div>
+        <div>
+          <div class="qstat__num">10 min</div>
+          <div class="qstat__label">Tiempo promedio</div>
+        </div>
+      </div>
+      <div class="qstat">
+        <div class="qstat__icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2a7 7 0 00-7 7v3H4a2 2 0 00-2 2v6h20v-6a2 2 0 00-2-2h-1V9a7 7 0 00-7-7zm0 2a5 5 0 015 5v3H7V9a5 5 0 015-5z"/></svg>
+        </div>
+        <div>
+          <div class="qstat__num">Privado</div>
+          <div class="qstat__label">Datos anónimos</div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- ilustración abstracta hecha con CSS (sin imágenes) -->
-  <div class="hero__art" aria-hidden="true">
+  <div class="hero__art tilt reveal" aria-hidden="true">
     <div class="art-card art-progress">
-  <div class="art-progress__title">0/10</div>
-  <div class="art-progress__bar"></div>
-  <ul class="art-progress__list">
-    <li></li><li></li><li></li>
-  </ul>
-</div>
-
-<div class="art-card art-tip">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-    <path d="M7 10V7a5 5 0 1 1 10 0v3M6 10h12a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
-  <span>Confidencial</span>
-</div>
-
+      <div class="art-progress__title">Progreso</div>
+      <div class="art-progress__bar"></div>
+      <ul class="art-progress__list"><li></li><li></li><li></li><li></li></ul>
+    </div>
+    <div class="art-card art-tip">
+      <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M11 7h2v2h-2V7zm0 4h2v6h-2v-6zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+      </svg>
+      <span>Completa todas las preguntas para un resultado más preciso.</span>
+    </div>
+    <div class="sparkles"></div>
   </div>
 </section>
 
-<section id="como-funciona" class="features container">
-  <div class="features-grid">
-    <article class="card">
-      <h3>Breve y claro</h3>
-      <p>Preguntas directas para evaluar cansancio, cinismo y eficacia académica.</p>
-    </article>
-    <article class="card">
-      <h3>Resultados útiles</h3>
-      <p>Obtén una lectura inmediata y recomendaciones para cuidarte mejor.</p>
-    </article>
-    <article class="card">
-      <h3>Privacidad primero</h3>
-      <p>Tus respuestas no identifican tu identidad. Tus datos se tratan con respeto.</p>
-    </article>
+<section id="lista-tests" class="features-band">
+  <div class="container">
+    <h2 class="section-title">Instrumentos disponibles</h2>
+    <p class="section-subtitle">Elige un test para comenzar.</p>
+
+    <div class="features-grid">
+      {% for t in tests %}
+        <!-- La tarjeta completa es el enlace (NO anidar <a> adentro). -->
+        <a class="card card--test tilt reveal"
+           href="{{ url_for('test_run', test_code=t.code) }}"
+           title="Abrir {{ t.name }}">
+          <div class="card__glow"></div>
+          <div class="card__body">
+            <div class="card__icon">
+              {% if "PSS" in t.name or "Percibido" in t.name %}
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 3a9 9 0 100 18 9 9 0 000-18zm1 13h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
+              {% elif "SISCO" in t.name %}
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+              {% else %}
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 6a6 6 0 016 6v6H6v-6a6 6 0 016-6zM9 18h6v2H9v-2z"/></svg>
+              {% endif %}
+            </div>
+
+            <h3 class="card__title">{{ t.name }}</h3>
+
+            {% if t.description %}
+              <p class="card__desc clamp-3">{{ t.description }}</p>
+            {% endif %}
+
+            <p class="card__meta">
+              <span>Escala Likert {{ t.likert_min }}–{{ t.likert_max }}</span>
+              <span>Versión {{ t.version }}</span>
+            </p>
+
+            <div class="card__actions">
+              <span class="btn btn--sm btn--ghost" role="button" aria-hidden="true">
+                Comenzar
+              </span>
+            </div>
+          </div>
+        </a>
+      {% else %}
+        <article class="card card--test">
+          <div class="card__body">
+            <h3 class="card__title">No hay tests cargados</h3>
+            <p class="card__desc">Verifica la inicialización de datos en el servidor.</p>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
   </div>
 </section>
 {% endblock %}

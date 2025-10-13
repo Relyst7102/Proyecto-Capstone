@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titulo %}Datos personales · Tests Académicos{% endblock %}
+{% block contenido %}
+<section class="container form-wrap">
+  <div class="card form-card">
+    <h2 style="margin-top:0;">Datos personales</h2>
+    <div class="grid-2">
+      <div class="field">
+        <label>Nombre completo</label>
+        <input class="input" value="{{ user.name }}" readonly>
+      </div>
+      <div class="field">
+        <label>Edad</label>
+        <input class="input" value="{{ user.age or '' }}" readonly>
+      </div>
+      <div class="field">
+        <label>Universidad</label>
+        <input class="input" value="{{ user.university or '' }}" readonly>
+      </div>
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input class="input" value="{{ user.email }}" readonly>
+      </div>
+      <div class="field">
+        <label>Carrera</label>
+        <input class="input" value="{{ user.career or '' }}" readonly>
+      </div>
+      <div class="field">
+        <label>Ciclo / Semestre</label>
+        <input class="input" value="{{ user.cycle or '' }}" readonly>
+      </div>
+    </div>
+    <div class="actions" style="margin-top:12px;">
+      <a class="btn btn--ghost" href="{{ url_for('perfil') }}">Volver</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
