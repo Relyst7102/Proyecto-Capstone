@@ -41,7 +41,7 @@ if not DATABASE_URL:
 app.config.update(
     SQLALCHEMY_DATABASE_URI=DATABASE_URL,
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
-    SECRET_KEY=os.getenv("SECRET_KEY", "dev-secret-pon-algo-largo"),
+    SECRET_KEY=os.getenv("SECRET_KEY", "capstone-project"),
     SQLALCHEMY_ENGINE_OPTIONS={"pool_pre_ping": True, "pool_recycle": 280},
 )
 db = SQLAlchemy(app)
