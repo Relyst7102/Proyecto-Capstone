@@ -3,6 +3,7 @@ import os
 import secrets
 from datetime import datetime
 from urllib.parse import urlencode
+import pytz  # Importamos pytz para manejar zonas horarias
 
 from flask import (
     Flask, render_template, request, redirect, url_for,
@@ -31,18 +32,16 @@ load_dotenv()
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
 # ---------- Configuración MySQL ----------
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    raise RuntimeError(
-        "Falta la variable de entorno DATABASE_URL. "
-        "Defínela en Render > Settings > Environment."
-    )
-
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "mysql+pymysql://root:712002@127.0.0.1:3306/proyectocapstone?charset=utf8mb4"
+)
 app.config.update(
     SQLALCHEMY_DATABASE_URI=DATABASE_URL,
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
-    SECRET_KEY=os.getenv("SECRET_KEY", "capstone-project"),
+    SECRET_KEY=os.getenv("SECRET_KEY", "dev-secret-pon-algo-largo"),
     SQLALCHEMY_ENGINE_OPTIONS={"pool_pre_ping": True, "pool_recycle": 280},
+    # SQLALCHEMY_ECHO=True,
 )
 db = SQLAlchemy(app)
 
@@ -60,6 +59,9 @@ def _invalidate_session_on_restart():
     if flask_session.get("_boot_id") != app.config["BOOT_ID"]:
         flask_session.clear()
         flask_session["_boot_id"] = app.config["BOOT_ID"]
+
+# Definir la zona horaria de Lima (Perú)
+LIMA_TZ = pytz.timezone('America/Lima')
 
 # ===========================
 #           MODELOS
@@ -495,25 +497,37 @@ def perfil_password():
     return render_template("perfil_password.html")
 
 # ---- Tomar un test ----
+@app.route("/test/<string:test_code>", methods=["GET", "POST"])
 def test_run(test_code):
     test = Test.query.filter_by(code=test_code).first_or_404()
 
-    # exigir login en cualquier método
+    # Exigir login en cualquier método
     need = require_login(next_url=url_for("test_run", test_code=test_code))
     if need: return need
 
     user = current_user()
 
     if request.method == "POST":
+        # Asignar la hora de inicio solo si no se ha asignado previamente
+        if not request.form.get("started_at"):
+            started_at = datetime.now(LIMA_TZ)  # Obtener la hora actual en Lima
+        else:
+            started_at = request.form.get("started_at")  # Usar la hora pasada desde el formulario
+
         # Crear sesión del test para el usuario logueado
         sess = TestSession(
             test_id=test.id,
             participant_id=user.id,
             ip_addr=request.remote_addr,
             user_agent=request.headers.get("User-Agent"),
-            version=test.version
+            version=test.version,
+            started_at=started_at  # Asignar correctamente la hora de inicio
         )
-        db.session.add(sess); db.session.flush()  # Guardar la sesión y obtener el ID
+        db.session.add(sess)
+        db.session.flush()  # Guardar la sesión y obtener el ID para que podamos acceder al ID de la sesión
+
+        # Inicializar el diccionario para el desglose de puntajes por sección
+        score_breakdown = {}
 
         # Guardar respuestas y calcular el puntaje
         total_score = 0
@@ -525,13 +539,36 @@ def test_run(test_code):
             try:
                 response = Response(session_id=sess.id, question_id=q.id, value=int(val))
                 db.session.add(response)
-                total_score += int(val)  # Sumar el valor de cada respuesta
+
+                # Sumar el valor de cada respuesta al puntaje total
+                total_score += int(val)
+
+                # Obtener la sección de la pregunta
+                section_code = q.section.code
+
+                # Si no existe una entrada para esta sección en score_breakdown, inicializamos su puntaje
+                if section_code not in score_breakdown:
+                    score_breakdown[section_code] = 0
+
+                # Acumulamos el puntaje en el desglose por sección
+                score_breakdown[section_code] += int(val)
+
             except ValueError:
                 db.session.rollback()
                 return f"Respuesta inválida para la pregunta {q.number}", 400
 
-        sess.score_total = total_score  # Asignar el puntaje total
-        db.session.commit()  # Guardar el puntaje total en la base de datos
+        # Guardar el puntaje total
+        sess.score_total = total_score
+
+        # Guardar el desglose de puntajes por sección en JSON
+        sess.score_breakdown = score_breakdown
+
+        # Solo cuando el test esté completado, asignamos la fecha de finalización
+        completed_at = datetime.now(LIMA_TZ)  # Obtener la hora de finalización en Lima
+        print(f"Completed at: {completed_at}")  # Imprimir la fecha de completado para depuración
+        sess.completed_at = completed_at  # Asignar la hora de finalización solo cuando se complete
+
+        db.session.commit()  # Guardar el puntaje total, el desglose y la fecha de finalización en la base de datos
 
         flask_session["session_id"] = sess.id  # Guardar la sesión activa
         return redirect(url_for("resultado", session_id=sess.id))
@@ -546,7 +583,7 @@ def resultado(session_id):
         session=sess,
         participant=sess.participant,
     )
-
+    
 # ===========================
 #            MAIN
 # ===========================
