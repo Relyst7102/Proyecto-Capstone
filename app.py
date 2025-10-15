@@ -32,16 +32,18 @@ load_dotenv()
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
 # ---------- Configuración MySQL ----------
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "mysql+pymysql://root:712002@127.0.0.1:3306/proyectocapstone?charset=utf8mb4"
-)
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError(
+        "Falta la variable de entorno DATABASE_URL. "
+        "Defínela en Render > Settings > Environment."
+    )
+
 app.config.update(
     SQLALCHEMY_DATABASE_URI=DATABASE_URL,
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
     SECRET_KEY=os.getenv("SECRET_KEY", "dev-secret-pon-algo-largo"),
     SQLALCHEMY_ENGINE_OPTIONS={"pool_pre_ping": True, "pool_recycle": 280},
-    # SQLALCHEMY_ECHO=True,
 )
 db = SQLAlchemy(app)
 
