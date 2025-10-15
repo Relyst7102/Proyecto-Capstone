@@ -495,7 +495,6 @@ def perfil_password():
     return render_template("perfil_password.html")
 
 # ---- Tomar un test ----
-@app.route("/test/<string:test_code>", methods=["GET", "POST"])
 def test_run(test_code):
     test = Test.query.filter_by(code=test_code).first_or_404()
 
@@ -506,7 +505,7 @@ def test_run(test_code):
     user = current_user()
 
     if request.method == "POST":
-        # crear sesión del test para el usuario logueado
+        # Crear sesión del test para el usuario logueado
         sess = TestSession(
             test_id=test.id,
             participant_id=user.id,
@@ -514,18 +513,27 @@ def test_run(test_code):
             user_agent=request.headers.get("User-Agent"),
             version=test.version
         )
-        db.session.add(sess); db.session.flush()
+        db.session.add(sess); db.session.flush()  # Guardar la sesión y obtener el ID
 
-        # guardar respuestas
+        # Guardar respuestas y calcular el puntaje
+        total_score = 0
         for q in test.questions:
             val = request.form.get(f"q{q.number}")
             if val is None:
                 db.session.rollback()
                 return f"Falta la respuesta {q.number}", 400
-            db.session.add(Response(session_id=sess.id, question_id=q.id, value=int(val)))
+            try:
+                response = Response(session_id=sess.id, question_id=q.id, value=int(val))
+                db.session.add(response)
+                total_score += int(val)  # Sumar el valor de cada respuesta
+            except ValueError:
+                db.session.rollback()
+                return f"Respuesta inválida para la pregunta {q.number}", 400
 
-        db.session.commit()
-        flask_session["session_id"] = sess.id
+        sess.score_total = total_score  # Asignar el puntaje total
+        db.session.commit()  # Guardar el puntaje total en la base de datos
+
+        flask_session["session_id"] = sess.id  # Guardar la sesión activa
         return redirect(url_for("resultado", session_id=sess.id))
 
     return render_template("test.html", test=test)
