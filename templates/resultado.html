@@ -45,6 +45,18 @@
       <p class="pending-hint" style="margin:.8rem 0 0 0;">
         Nota: es un puntaje bruto (aún sin inversión de ítems ni clasificación). Se añadirá más adelante.
       </p>
+      <br>
+      <!-- Desglose por sección -->
+    <div class="card result-card">
+      <h3>Desglose por sección</h3>
+      <div>
+        {% for section_code, score in session.score_breakdown.items() %}
+          <div class="section-breakdown">
+            <strong>{{ section_code | capitalize }}</strong>: {{ score }} puntos
+          </div>
+        {% endfor %}
+      </div>
+    </div>
     </div>
 
     <!-- Respuestas -->
